@@ -2,20 +2,19 @@
 // CROSSFIRE BOOST QUEUE - USER SIDE
 // ============================================
 
-// ✅ FIX: Initialize Supabase correctly
+// ✅ USE THE FULL KEY (click Copy button in Supabase)
 const supabaseUrl = 'https://eagvujficirkrlrewtxk.supabase.co';
-const supabaseKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImVhZ3Z1amZpaWNya3JscmV3dHhrIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODIxODg1ODAsImV4cCI6MjA5Nzc2NDU4MH0.s1lRcNV-peA0yQBAKWAmhaCh5Z1oLjboBQ_d0r5Uuj8';  // ← REPLACE WITH YOUR REAL KEY
+const supabaseKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImVhZ3Z1amZpaWNya3JscmV3dHhrIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODIxODg1ODAsImV4cCI6MjA5Nzc2NDU4MH0.s1lRcNV-peA0yQBAKWAmhaCh5Z1oLjboBQ_d0r5Uuj8';  // ← CLICK COPY IN SUPABASE
 
-// ✅ CORRECT: Create supabase client with function
+console.log('🔑 Supabase URL:', supabaseUrl);
+console.log('🔑 Key length:', supabaseKey.length);
+// Initialize Supabase
 const { createClient } = supabase;
-const supabaseClient = createClient(supabaseUrl, supabaseKey);
-
-// Make it globally accessible
-window.supabase = supabaseClient;
+const client = createClient(supabaseUrl, supabaseKey);
+window.supabase = client;
 
 // State
 let currentUser = null;
-let userQueueId = null;
 
 // DOM Elements
 const boostContracts = document.getElementById('boostContracts');
@@ -27,8 +26,7 @@ const currentUserDisplay = document.getElementById('currentUserDisplay');
 
 // Initialize
 async function init() {
-    console.log('🚀 Initializing app...');
-    console.log('🔑 Supabase client:', window.supabase);
+    console.log('🚀 App starting...');
     await loadBoostContracts();
     await loadLiveQueue();
     await subscribeToUpdates();
@@ -39,73 +37,94 @@ async function init() {
         currentUserDisplay.textContent = `👤 ${currentUser}`;
         await loadUserQueueStatus();
     }
-    console.log('✅ App initialized');
 }
-
-// Set User
-setUserBtn.addEventListener('click', async () => {
-    const ign = playerIGN.value.trim();
-    if (!ign) {
-        showMessage('Please enter your IGN', 'error');
-        return;
-    }
-    
-    currentUser = ign;
-    sessionStorage.setItem('crossfire_user', ign);
-    currentUserDisplay.textContent = `👤 ${ign}`;
-    playerIGN.value = '';
-    await loadUserQueueStatus();
-    showMessage(`Welcome ${ign}!`, 'success');
-});
 
 // Load Boost Contracts
 async function loadBoostContracts() {
     console.log('📡 Loading boost contracts...');
     
     try {
-        const { data, error } = await window.supabase
+        const result = await window.supabase
             .from('boost_contracts')
             .select('*')
             .eq('status', 'active')
             .order('created_at', { ascending: false });
 
-        console.log('📊 Data:', data);
-        console.log('❌ Error:', error);
+        console.log('📊 Result:', result);
 
-        if (error) {
-            console.error('Error loading contracts:', error);
-            showMessage('Error loading contracts: ' + error.message, 'error');
+        if (result.error) {
+            console.error('❌ Error:', result.error);
+            boostContracts.innerHTML = `<p class="empty-msg">Database Error: ${result.error.message}</p>`;
             return;
         }
 
-        if (!data || data.length === 0) {
-            boostContracts.innerHTML = '<p class="empty-msg">No available boosts right now</p>';
+        if (!result.data || result.data.length === 0) {
+            console.log('📭 No data found - adding sample data...');
+            
+            // Auto-add sample data
+            const insertResult = await window.supabase
+                .from('boost_contracts')
+                .insert([
+                    {
+                        player_ign: 'SniperKing',
+                        from_rank: 'Platinum',
+                        to_rank: 'Eagle',
+                        boost_type: 'Rank Boost',
+                        price: 750,
+                        notes: 'Looking for professional booster',
+                        status: 'active'
+                    },
+                    {
+                        player_ign: 'ProPlayer123',
+                        from_rank: 'Gold',
+                        to_rank: 'Eagle',
+                        boost_type: 'Rank Boost',
+                        price: 500,
+                        notes: 'Need boost to Eagle ASAP',
+                        status: 'active'
+                    },
+                    {
+                        player_ign: 'NoobMaster69',
+                        from_rank: 'Silver',
+                        to_rank: 'Platinum',
+                        boost_type: 'Rank Boost',
+                        price: 350,
+                        notes: 'Can play on weekends',
+                        status: 'active'
+                    }
+                ]);
+            
+            console.log('✅ Sample data inserted:', insertResult);
+            
+            // Reload after inserting
+            await loadBoostContracts();
             return;
         }
 
-        boostContracts.innerHTML = data.map(contract => `
+        console.log(`✅ Found ${result.data.length} contracts`);
+
+        boostContracts.innerHTML = result.data.map(contract => `
             <div class="boost-card">
                 <div class="header">
-                    <span class="player">🎮 ${contract.player_ign}</span>
-                    <span class="status">${contract.boost_type}</span>
+                    <span class="player">🎮 ${contract.player_ign || 'Unknown'}</span>
+                    <span class="status">${contract.boost_type || 'Boost'}</span>
                 </div>
                 <div class="rank-info">
-                    ${contract.from_rank} <span class="arrow">→</span> ${contract.to_rank}
+                    ${contract.from_rank || '?'} <span class="arrow">→</span> ${contract.to_rank || '?'}
                 </div>
                 <div class="rank-info" style="color:#888; font-size:0.8rem;">
-                    💰 ₱${contract.price}
+                    💰 ₱${contract.price || 0}
                 </div>
                 ${contract.notes ? `<div style="color:#666; font-size:0.8rem; margin-top:5px;">📝 ${contract.notes}</div>` : ''}
-                <div class="actions">
+                <div class="actions" style="margin-top:10px;">
                     <button class="btn success small" onclick="joinQueue('${contract.id}')">🎯 Join Queue</button>
                 </div>
             </div>
         `).join('');
         
-        console.log('✅ Contracts loaded successfully!');
     } catch (error) {
-        console.error('Error:', error);
-        showMessage('Failed to load contracts', 'error');
+        console.error('💥 Exception:', error);
+        boostContracts.innerHTML = `<p class="empty-msg">Error: ${error.message}</p>`;
     }
 }
 
@@ -147,7 +166,6 @@ async function joinQueue(contractId) {
             return;
         }
 
-        userQueueId = data.id;
         showMessage('✅ You joined the queue!', 'success');
         await loadUserQueueStatus();
         await loadLiveQueue();
@@ -200,7 +218,7 @@ async function loadUserQueueStatus() {
                     </span>
                 </div>
                 <div>
-                    <span class="status ${item.status === 'accepted' ? 'completed' : ''}" style="font-size:0.8rem;">
+                    <span style="font-size:0.8rem;">
                         ${item.status === 'waiting' ? '⏳ Waiting' : 
                           item.status === 'accepted' ? '✅ Accepted' : 
                           item.status === 'in_progress' ? '🔄 In Progress' : 
@@ -284,8 +302,6 @@ async function loadLiveQueue() {
 
 // Real-time Subscriptions
 function subscribeToUpdates() {
-    console.log('📡 Setting up real-time subscriptions...');
-    
     window.supabase
         .channel('contract_changes')
         .on('postgres_changes', 
@@ -304,8 +320,6 @@ function subscribeToUpdates() {
             }
         )
         .subscribe();
-    
-    console.log('✅ Subscriptions set up');
 }
 
 // Show Message
@@ -322,5 +336,21 @@ function showMessage(msg, type = 'info') {
     setTimeout(() => msgDiv.remove(), 5000);
 }
 
-// Initialize
+// Set User
+setUserBtn.addEventListener('click', async () => {
+    const ign = playerIGN.value.trim();
+    if (!ign) {
+        showMessage('Please enter your IGN', 'error');
+        return;
+    }
+    
+    currentUser = ign;
+    sessionStorage.setItem('crossfire_user', ign);
+    currentUserDisplay.textContent = `👤 ${ign}`;
+    playerIGN.value = '';
+    await loadUserQueueStatus();
+    showMessage(`Welcome ${ign}!`, 'success');
+});
+
+// Start
 init();
