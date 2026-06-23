@@ -2,6 +2,7 @@
 // CROSSFIRE BOOST QUEUE - USER SIDE
 // ============================================
 
+// ✅ TAMA NA TO - COPY PASTE MO LANG
 const supabaseUrl = 'https://eagvujficirkrlrewtxk.supabase.co';
 const supabaseKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImVhZ3Z1amZpaWNya3JscmV3dHhrIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODIxODg1ODAsImV4cCI6MjA5Nzc2NDU4MH0.s1lRcNV-peA0yQBAKWAmhaCh5Z1oLjboBQ_d0r5Uuj8';
 
@@ -9,9 +10,12 @@ const { createClient } = supabase;
 const supabaseClient = createClient(supabaseUrl, supabaseKey);
 window.supabase = supabaseClient;
 
+console.log('✅ Supabase connected!');
+console.log('🌐 URL:', supabaseUrl);
+
 let currentUser = null;
 
-// Wait for DOM to load
+// Wait for DOM
 document.addEventListener('DOMContentLoaded', function() {
     console.log('🚀 App started');
     loadBoostContracts();
@@ -25,7 +29,6 @@ document.addEventListener('DOMContentLoaded', function() {
         loadUserQueueStatus();
     }
     
-    // Set User button
     document.getElementById('setUserBtn').addEventListener('click', function() {
         const ign = document.getElementById('playerIGN').value.trim();
         if (!ign) {
@@ -62,12 +65,7 @@ async function loadBoostContracts() {
         }
 
         if (!data || data.length === 0) {
-            container.innerHTML = `
-                <p class="empty-msg">No available boosts right now</p>
-                <p style="color:#666; font-size:0.8rem; text-align:center; margin-top:10px;">
-                    💡 Add data to your boost_contracts table in Supabase
-                </p>
-            `;
+            container.innerHTML = `<p class="empty-msg">No available boosts right now</p>`;
             return;
         }
 
@@ -91,7 +89,7 @@ async function loadBoostContracts() {
         `).join('');
         
     } catch (error) {
-        console.error('Error:', error);
+        console.error('💥 Error:', error);
         document.getElementById('boostContracts').innerHTML = `<p class="empty-msg">Error: ${error.message}</p>`;
     }
 }
@@ -180,8 +178,7 @@ async function loadUserQueueStatus() {
                 <div>
                     <span style="font-size:0.8rem;">
                         ${item.status === 'waiting' ? '⏳ Waiting' : 
-                          item.status === 'accepted' ? '✅ Accepted' : 
-                          '❌ Cancelled'}
+                          item.status === 'accepted' ? '✅ Accepted' : '❌ Cancelled'}
                     </span>
                     ${item.status === 'waiting' ? `<button class="btn danger small" onclick="leaveQueue('${item.id}')" style="margin-left:10px;">Leave</button>` : ''}
                 </div>
