@@ -2,16 +2,28 @@
 // CROSSFIRE BOOST QUEUE - USER SIDE
 // ============================================
 
-// ✅ USE THE FULL KEY (click Copy button in Supabase)
+// ✅ REPLACE THIS WITH YOUR FULL KEY
 const supabaseUrl = 'https://eagvujficirkrlrewtxk.supabase.co';
-const supabaseKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImVhZ3Z1amZpaWNya3JscmV3dHhrIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODIxODg1ODAsImV4cCI6MjA5Nzc2NDU4MH0.s1lRcNV-peA0yQBAKWAmhaCh5Z1oLjboBQ_d0r5Uuj8';  // ← CLICK COPY IN SUPABASE
+const supabaseKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImVhZ3Z1amZpaWNya3JscmV3dHhrIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODIxODg1ODAsImV4cCI6MjA5Nzc2NDU4MH0.s1lRcNV-peA0yQBAKWAmhaCh5Z1oLjboBQ_d0r5Uuj8';  // ← MUST BE FULL KEY (150+ chars)
 
-console.log('🔑 Supabase URL:', supabaseUrl);
 console.log('🔑 Key length:', supabaseKey.length);
+
+// Add CORS headers
+const options = {
+    headers: {
+        'apikey': supabaseKey,
+        'Authorization': `Bearer ${supabaseKey}`,
+        'Content-Type': 'application/json',
+        'Accept': 'application/json'
+    }
+};
+
 // Initialize Supabase
 const { createClient } = supabase;
-const client = createClient(supabaseUrl, supabaseKey);
+const client = createClient(supabaseUrl, supabaseKey, options);
 window.supabase = client;
+
+console.log('✅ Supabase client created');
 
 // State
 let currentUser = null;
@@ -27,6 +39,22 @@ const currentUserDisplay = document.getElementById('currentUserDisplay');
 // Initialize
 async function init() {
     console.log('🚀 App starting...');
+    
+    // Test connection first
+    try {
+        const test = await window.supabase.from('boost_contracts').select('*').limit(1);
+        console.log('📡 Connection test:', test);
+        if (test.error) {
+            console.error('❌ Connection error:', test.error);
+            boostContracts.innerHTML = `<p class="empty-msg">Connection Error: ${test.error.message}</p>`;
+            return;
+        }
+    } catch (err) {
+        console.error('💥 Connection failed:', err);
+        boostContracts.innerHTML = `<p class="empty-msg">Connection Error: ${err.message}</p>`;
+        return;
+    }
+    
     await loadBoostContracts();
     await loadLiveQueue();
     await subscribeToUpdates();
@@ -53,15 +81,15 @@ async function loadBoostContracts() {
         console.log('📊 Result:', result);
 
         if (result.error) {
-            console.error('❌ Error:', result.error);
+            console.error('❌ Database error:', result.error);
             boostContracts.innerHTML = `<p class="empty-msg">Database Error: ${result.error.message}</p>`;
             return;
         }
 
         if (!result.data || result.data.length === 0) {
-            console.log('📭 No data found - adding sample data...');
+            console.log('📭 No data found - inserting sample data...');
             
-            // Auto-add sample data
+            // Insert sample data
             const insertResult = await window.supabase
                 .from('boost_contracts')
                 .insert([
@@ -95,8 +123,13 @@ async function loadBoostContracts() {
                 ]);
             
             console.log('✅ Sample data inserted:', insertResult);
+            if (insertResult.error) {
+                console.error('❌ Insert error:', insertResult.error);
+                boostContracts.innerHTML = `<p class="empty-msg">Error inserting data: ${insertResult.error.message}</p>`;
+                return;
+            }
             
-            // Reload after inserting
+            // Reload to show data
             await loadBoostContracts();
             return;
         }
