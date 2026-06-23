@@ -1,5 +1,9 @@
+// ============================================
+// CROSSFIRE BOOST QUEUE - ADMIN SIDE
+// ============================================
+
 const supabaseUrl = 'https://eagvujficirkrlrewtxk.supabase.co';
-const supabaseKey = 'eyJhbGci0iJIUzI1NiIsInR5cCI6IkpXVcJ9.eyJpc3Mi0iJzdXBhYmFzZSIsInJIzIi16ImVhZ';
+const supabaseKey = 'YOUR_FULL_ANON_KEY_HERE';  // Click Copy button to get full key
 const supabase = supabase.createClient(supabaseUrl, supabaseKey);
 
 // Admin Password
@@ -132,7 +136,6 @@ createBoostBtn.addEventListener('click', async () => {
 
     showMessage(`✅ Boost contract created for ${ign}!`, 'success');
     
-    // Clear fields
     boostIGN.value = '';
     boostPrice.value = '';
     boostNotes.value = '';
@@ -154,7 +157,6 @@ async function completeContract(contractId) {
         return;
     }
 
-    // Mark all queue requests as completed
     await supabase
         .from('queue_requests')
         .update({ status: 'completed' })
@@ -282,25 +284,21 @@ async function loadCompleted() {
 // Load Stats
 async function loadStats() {
     try {
-        // Active boosts
         const { count: active } = await supabase
             .from('boost_contracts')
             .select('*', { count: 'exact', head: true })
             .eq('status', 'active');
 
-        // Queued requests
         const { count: queued } = await supabase
             .from('queue_requests')
             .select('*', { count: 'exact', head: true })
             .eq('status', 'waiting');
 
-        // Completed boosts
         const { count: completed } = await supabase
             .from('boost_contracts')
             .select('*', { count: 'exact', head: true })
             .eq('status', 'completed');
 
-        // Total earnings
         const { data: earningsData } = await supabase
             .from('boost_contracts')
             .select('price')
