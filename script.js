@@ -2,9 +2,12 @@
 // CROSSFIRE BOOST QUEUE - USER SIDE
 // ============================================
 
-const supabaseUrl = 'https://eagvujficirkrlrewtxk.supabase.co';
-const supabaseKey = 'YOUR_FULL_ANON_KEY_HERE';  // Click Copy button to get full key
-const supabase = supabase.createClient(supabaseUrl, supabaseKey);
+// ✅ FIX: Check if supabase is already defined
+if (typeof supabase === 'undefined') {
+    const supabaseUrl = 'https://eagvujficirkrlrewtxk.supabase.co';
+    const supabaseKey = 'YOUR_ANON_KEY_HERE';  // ← REPLACE WITH YOUR FULL KEY
+    var supabase = supabase.createClient(supabaseUrl, supabaseKey);
+}
 
 // State
 let currentUser = null;
@@ -20,6 +23,7 @@ const currentUserDisplay = document.getElementById('currentUserDisplay');
 
 // Initialize
 async function init() {
+    console.log('🚀 Initializing app...');
     await loadBoostContracts();
     await loadLiveQueue();
     await subscribeToUpdates();
@@ -30,6 +34,7 @@ async function init() {
         currentUserDisplay.textContent = `👤 ${currentUser}`;
         await loadUserQueueStatus();
     }
+    console.log('✅ App initialized');
 }
 
 // Set User
@@ -50,40 +55,53 @@ setUserBtn.addEventListener('click', async () => {
 
 // Load Boost Contracts
 async function loadBoostContracts() {
-    const { data, error } = await supabase
-        .from('boost_contracts')
-        .select('*')
-        .eq('status', 'active')
-        .order('created_at', { ascending: false });
+    console.log('📡 Loading boost contracts...');
+    
+    try {
+        const { data, error } = await supabase
+            .from('boost_contracts')
+            .select('*')
+            .eq('status', 'active')
+            .order('created_at', { ascending: false });
 
-    if (error) {
-        console.error('Error loading contracts:', error);
-        return;
+        console.log('📊 Data:', data);
+        console.log('❌ Error:', error);
+
+        if (error) {
+            console.error('Error loading contracts:', error);
+            showMessage('Error loading contracts: ' + error.message, 'error');
+            return;
+        }
+
+        if (!data || data.length === 0) {
+            boostContracts.innerHTML = '<p class="empty-msg">No available boosts right now</p>';
+            return;
+        }
+
+        boostContracts.innerHTML = data.map(contract => `
+            <div class="boost-card">
+                <div class="header">
+                    <span class="player">🎮 ${contract.player_ign}</span>
+                    <span class="status">${contract.boost_type}</span>
+                </div>
+                <div class="rank-info">
+                    ${contract.from_rank} <span class="arrow">→</span> ${contract.to_rank}
+                </div>
+                <div class="rank-info" style="color:#888; font-size:0.8rem;">
+                    💰 ₱${contract.price}
+                </div>
+                ${contract.notes ? `<div style="color:#666; font-size:0.8rem; margin-top:5px;">📝 ${contract.notes}</div>` : ''}
+                <div class="actions">
+                    <button class="btn success small" onclick="joinQueue('${contract.id}')">🎯 Join Queue</button>
+                </div>
+            </div>
+        `).join('');
+        
+        console.log('✅ Contracts loaded successfully!');
+    } catch (error) {
+        console.error('Error:', error);
+        showMessage('Failed to load contracts', 'error');
     }
-
-    if (!data || data.length === 0) {
-        boostContracts.innerHTML = '<p class="empty-msg">No available boosts right now</p>';
-        return;
-    }
-
-    boostContracts.innerHTML = data.map(contract => `
-        <div class="boost-card">
-            <div class="header">
-                <span class="player">🎮 ${contract.player_ign}</span>
-                <span class="status">${contract.boost_type}</span>
-            </div>
-            <div class="rank-info">
-                ${contract.from_rank} <span class="arrow">→</span> ${contract.to_rank}
-            </div>
-            <div class="rank-info" style="color:#888; font-size:0.8rem;">
-                💰 ₱${contract.price}
-            </div>
-            ${contract.notes ? `<div style="color:#666; font-size:0.8rem; margin-top:5px;">📝 ${contract.notes}</div>` : ''}
-            <div class="actions">
-                <button class="btn success small" onclick="joinQueue('${contract.id}')">🎯 Join Queue</button>
-            </div>
-        </div>
-    `).join('');
 }
 
 // Join Queue
@@ -93,40 +111,45 @@ async function joinQueue(contractId) {
         return;
     }
 
-    const { data: existing } = await supabase
-        .from('queue_requests')
-        .select('*')
-        .eq('contract_id', contractId)
-        .eq('player_ign', currentUser)
-        .eq('status', 'waiting');
+    try {
+        const { data: existing } = await supabase
+            .from('queue_requests')
+            .select('*')
+            .eq('contract_id', contractId)
+            .eq('player_ign', currentUser)
+            .eq('status', 'waiting');
 
-    if (existing && existing.length > 0) {
-        showMessage('You are already in this queue!', 'error');
-        return;
+        if (existing && existing.length > 0) {
+            showMessage('You are already in this queue!', 'error');
+            return;
+        }
+
+        const { data, error } = await supabase
+            .from('queue_requests')
+            .insert([
+                {
+                    contract_id: contractId,
+                    player_ign: currentUser,
+                    status: 'waiting',
+                    joined_at: new Date().toISOString()
+                }
+            ])
+            .select()
+            .single();
+
+        if (error) {
+            showMessage('Error joining queue: ' + error.message, 'error');
+            return;
+        }
+
+        userQueueId = data.id;
+        showMessage('✅ You joined the queue!', 'success');
+        await loadUserQueueStatus();
+        await loadLiveQueue();
+    } catch (error) {
+        console.error('Error:', error);
+        showMessage('Failed to join queue', 'error');
     }
-
-    const { data, error } = await supabase
-        .from('queue_requests')
-        .insert([
-            {
-                contract_id: contractId,
-                player_ign: currentUser,
-                status: 'waiting',
-                joined_at: new Date().toISOString()
-            }
-        ])
-        .select()
-        .single();
-
-    if (error) {
-        showMessage('Error joining queue: ' + error.message, 'error');
-        return;
-    }
-
-    userQueueId = data.id;
-    showMessage('✅ You joined the queue!', 'success');
-    await loadUserQueueStatus();
-    await loadLiveQueue();
 }
 
 // Load User Queue Status
@@ -136,109 +159,122 @@ async function loadUserQueueStatus() {
         return;
     }
 
-    const { data, error } = await supabase
-        .from('queue_requests')
-        .select(`
-            *,
-            boost_contracts (
-                player_ign,
-                from_rank,
-                to_rank,
-                boost_type,
-                price
-            )
-        `)
-        .eq('player_ign', currentUser)
-        .neq('status', 'completed')
-        .order('joined_at', { ascending: false });
+    try {
+        const { data, error } = await supabase
+            .from('queue_requests')
+            .select(`
+                *,
+                boost_contracts (
+                    player_ign,
+                    from_rank,
+                    to_rank,
+                    boost_type,
+                    price
+                )
+            `)
+            .eq('player_ign', currentUser)
+            .neq('status', 'completed')
+            .order('joined_at', { ascending: false });
 
-    if (error) {
-        console.error('Error loading user queue:', error);
-        return;
-    }
+        if (error) {
+            console.error('Error loading user queue:', error);
+            return;
+        }
 
-    if (!data || data.length === 0) {
-        userQueueStatus.innerHTML = '<p class="empty-msg">You are not in any queue</p>';
-        return;
-    }
+        if (!data || data.length === 0) {
+            userQueueStatus.innerHTML = '<p class="empty-msg">You are not in any queue</p>';
+            return;
+        }
 
-    userQueueStatus.innerHTML = data.map(item => `
-        <div class="queue-item">
-            <div>
-                <span class="player-name">${item.boost_contracts.player_ign}</span>
-                <span style="color:#888; font-size:0.8rem; margin-left:10px;">
-                    ${item.boost_contracts.from_rank} → ${item.boost_contracts.to_rank}
-                </span>
+        userQueueStatus.innerHTML = data.map(item => `
+            <div class="queue-item">
+                <div>
+                    <span class="player-name">${item.boost_contracts.player_ign}</span>
+                    <span style="color:#888; font-size:0.8rem; margin-left:10px;">
+                        ${item.boost_contracts.from_rank} → ${item.boost_contracts.to_rank}
+                    </span>
+                </div>
+                <div>
+                    <span class="status ${item.status === 'accepted' ? 'completed' : ''}" style="font-size:0.8rem;">
+                        ${item.status === 'waiting' ? '⏳ Waiting' : 
+                          item.status === 'accepted' ? '✅ Accepted' : 
+                          item.status === 'in_progress' ? '🔄 In Progress' : 
+                          item.status === 'completed' ? '✅ Completed' : '❌ Cancelled'}
+                    </span>
+                    ${item.status === 'waiting' ? `<button class="btn danger small" onclick="leaveQueue('${item.id}')" style="margin-left:10px;">Leave</button>` : ''}
+                </div>
             </div>
-            <div>
-                <span class="status ${item.status === 'accepted' ? 'completed' : ''}" style="font-size:0.8rem;">
-                    ${item.status === 'waiting' ? '⏳ Waiting' : 
-                      item.status === 'accepted' ? '✅ Accepted' : 
-                      item.status === 'in_progress' ? '🔄 In Progress' : 
-                      item.status === 'completed' ? '✅ Completed' : '❌ Cancelled'}
-                </span>
-                ${item.status === 'waiting' ? `<button class="btn danger small" onclick="leaveQueue('${item.id}')" style="margin-left:10px;">Leave</button>` : ''}
-            </div>
-        </div>
-    `).join('');
+        `).join('');
+    } catch (error) {
+        console.error('Error:', error);
+    }
 }
 
 // Leave Queue
 async function leaveQueue(queueId) {
     if (!confirm('Are you sure you want to leave this queue?')) return;
 
-    const { error } = await supabase
-        .from('queue_requests')
-        .update({ status: 'cancelled' })
-        .eq('id', queueId);
+    try {
+        const { error } = await supabase
+            .from('queue_requests')
+            .update({ status: 'cancelled' })
+            .eq('id', queueId);
 
-    if (error) {
-        showMessage('Error leaving queue', 'error');
-        return;
+        if (error) {
+            showMessage('Error leaving queue', 'error');
+            return;
+        }
+
+        showMessage('You left the queue', 'info');
+        await loadUserQueueStatus();
+        await loadLiveQueue();
+    } catch (error) {
+        console.error('Error:', error);
+        showMessage('Failed to leave queue', 'error');
     }
-
-    showMessage('You left the queue', 'info');
-    await loadUserQueueStatus();
-    await loadLiveQueue();
 }
 
 // Load Live Queue
 async function loadLiveQueue() {
-    const { data, error } = await supabase
-        .from('queue_requests')
-        .select(`
-            *,
-            boost_contracts (
-                player_ign,
-                from_rank,
-                to_rank
-            )
-        `)
-        .eq('status', 'waiting')
-        .order('joined_at', { ascending: true });
+    try {
+        const { data, error } = await supabase
+            .from('queue_requests')
+            .select(`
+                *,
+                boost_contracts (
+                    player_ign,
+                    from_rank,
+                    to_rank
+                )
+            `)
+            .eq('status', 'waiting')
+            .order('joined_at', { ascending: true });
 
-    if (error) {
-        console.error('Error loading live queue:', error);
-        return;
-    }
+        if (error) {
+            console.error('Error loading live queue:', error);
+            return;
+        }
 
-    if (!data || data.length === 0) {
-        liveQueue.innerHTML = '<p class="empty-msg">No active queues</p>';
-        return;
-    }
+        if (!data || data.length === 0) {
+            liveQueue.innerHTML = '<p class="empty-msg">No active queues</p>';
+            return;
+        }
 
-    liveQueue.innerHTML = data.map((item, index) => `
-        <div class="queue-item">
-            <div>
-                <span style="color:#888; font-size:0.8rem;">#${index + 1}</span>
-                <span class="player-name" style="margin-left:10px;">${item.player_ign}</span>
-                <span style="color:#888; font-size:0.8rem; margin-left:10px;">
-                    ${item.boost_contracts.from_rank} → ${item.boost_contracts.to_rank}
-                </span>
+        liveQueue.innerHTML = data.map((item, index) => `
+            <div class="queue-item">
+                <div>
+                    <span style="color:#888; font-size:0.8rem;">#${index + 1}</span>
+                    <span class="player-name" style="margin-left:10px;">${item.player_ign}</span>
+                    <span style="color:#888; font-size:0.8rem; margin-left:10px;">
+                        ${item.boost_contracts.from_rank} → ${item.boost_contracts.to_rank}
+                    </span>
+                </div>
+                <span class="time">${new Date(item.joined_at).toLocaleTimeString()}</span>
             </div>
-            <span class="time">${new Date(item.joined_at).toLocaleTimeString()}</span>
-        </div>
-    `).join('');
+        `).join('');
+    } catch (error) {
+        console.error('Error:', error);
+    }
 }
 
 // Real-time Subscriptions
