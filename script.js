@@ -1,5 +1,9 @@
+// ============================================
+// CROSSFIRE BOOST QUEUE - USER SIDE
+// ============================================
+
 const supabaseUrl = 'https://eagvujficirkrlrewtxk.supabase.co';
-const supabaseKey = 'eyJhbGci0iJIUzI1NiIsInR5cCI6IkpXVcJ9.eyJpc3Mi0iJzdXBhYmFzZSIsInJIzIi16ImVhZ';
+const supabaseKey = 'YOUR_FULL_ANON_KEY_HERE';  // Click Copy button to get full key
 const supabase = supabase.createClient(supabaseUrl, supabaseKey);
 
 // State
@@ -20,7 +24,6 @@ async function init() {
     await loadLiveQueue();
     await subscribeToUpdates();
     
-    // Check if user is already set
     const savedUser = sessionStorage.getItem('crossfire_user');
     if (savedUser) {
         currentUser = savedUser;
@@ -90,7 +93,6 @@ async function joinQueue(contractId) {
         return;
     }
 
-    // Check if already in queue for this contract
     const { data: existing } = await supabase
         .from('queue_requests')
         .select('*')
@@ -241,7 +243,6 @@ async function loadLiveQueue() {
 
 // Real-time Subscriptions
 function subscribeToUpdates() {
-    // Subscribe to contract changes
     supabase
         .channel('contract_changes')
         .on('postgres_changes', 
@@ -250,7 +251,6 @@ function subscribeToUpdates() {
         )
         .subscribe();
 
-    // Subscribe to queue changes
     supabase
         .channel('queue_changes')
         .on('postgres_changes', 
