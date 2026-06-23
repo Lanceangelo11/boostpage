@@ -1,0 +1,57 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+    <title>Crossfire Boost - Queue</title>
+    <link rel="stylesheet" href="style.css" />
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>🔥 Crossfire Boost Queue</h1>
+            <p>Find available boost contracts and join the queue</p>
+        </header>
+
+        <!-- User Info -->
+        <div class="user-info-bar">
+            <input type="text" id="playerIGN" placeholder="Enter your IGN" class="input-field" />
+            <button id="setUserBtn" class="btn small primary">Set User</button>
+            <span id="currentUserDisplay" style="color:#888; margin-left: 15px;"></span>
+        </div>
+
+        <!-- Available Boost Contracts -->
+        <div class="panel user-panel">
+            <div class="card">
+                <h2>📋 Available Boost Contracts</h2>
+                <div id="boostContracts" class="boost-grid">
+                    <p class="empty-msg">No available boosts right now</p>
+                </div>
+            </div>
+
+            <!-- Your Active Queue -->
+            <div class="card">
+                <h3>📊 Your Queue Status</h3>
+                <div id="userQueueStatus">
+                    <p class="empty-msg">You're not in any queue</p>
+                </div>
+            </div>
+
+            <!-- Live Queue Updates -->
+            <div class="card">
+                <h3>🔄 Live Queue Updates</h3>
+                <div id="liveQueue" class="queue-list">
+                    <p class="empty-msg">No active queues</p>
+                </div>
+            </div>
+        </div>
+
+        <footer>
+            <p>© 2024 Crossfire Boost | Real-time Queue System</p>
+        </footer>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <script src="script.js"></script>
+</body>
+</html>

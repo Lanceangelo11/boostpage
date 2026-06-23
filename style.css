@@ -1,0 +1,348 @@
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+body {
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    background: #0a0a1a;
+    color: #fff;
+    min-height: 100vh;
+}
+
+.container {
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 20px;
+}
+
+/* Header */
+header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 20px 0;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+    flex-wrap: wrap;
+}
+
+header h1 {
+    font-size: 2rem;
+    background: linear-gradient(135deg, #ff6b35, #ff4500);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+}
+
+header p {
+    color: #888;
+    font-size: 0.9rem;
+}
+
+/* Cards */
+.card {
+    background: rgba(255, 255, 255, 0.05);
+    backdrop-filter: blur(10px);
+    border-radius: 15px;
+    padding: 25px;
+    margin-bottom: 20px;
+    border: 1px solid rgba(255, 255, 255, 0.05);
+}
+
+.card h2, .card h3 {
+    margin-bottom: 15px;
+    color: #fff;
+}
+
+/* Input Fields */
+.input-field {
+    padding: 10px 15px;
+    border-radius: 8px;
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    background: rgba(255, 255, 255, 0.05);
+    color: #fff;
+    font-size: 0.9rem;
+    width: 100%;
+    transition: all 0.3s;
+}
+
+.input-field:focus {
+    outline: none;
+    border-color: #ff6b35;
+    background: rgba(255, 107, 53, 0.1);
+}
+
+.input-field option {
+    background: #1a1a2e;
+}
+
+/* Buttons */
+.btn {
+    padding: 12px 25px;
+    border: none;
+    border-radius: 8px;
+    font-size: 0.9rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.3s;
+}
+
+.btn.primary {
+    background: linear-gradient(135deg, #ff6b35, #ff4500);
+    color: #fff;
+}
+
+.btn.primary:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 10px 20px rgba(255, 107, 53, 0.3);
+}
+
+.btn.danger {
+    background: #e74c3c;
+    color: #fff;
+}
+
+.btn.danger:hover {
+    background: #c0392b;
+}
+
+.btn.success {
+    background: #00b894;
+    color: #fff;
+}
+
+.btn.success:hover {
+    background: #00a381;
+}
+
+.btn.small {
+    padding: 6px 15px;
+    font-size: 0.8rem;
+}
+
+/* Boost Grid */
+.boost-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+    gap: 15px;
+}
+
+.boost-card {
+    background: rgba(255, 255, 255, 0.05);
+    border-radius: 10px;
+    padding: 15px;
+    border-left: 4px solid #ff6b35;
+    transition: all 0.3s;
+}
+
+.boost-card:hover {
+    transform: translateY(-3px);
+    background: rgba(255, 255, 255, 0.08);
+}
+
+.boost-card .header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 10px;
+}
+
+.boost-card .player {
+    font-weight: bold;
+    font-size: 1.1rem;
+    color: #ff6b35;
+}
+
+.boost-card .rank-info {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-size: 0.9rem;
+    color: #aaa;
+    margin: 8px 0;
+}
+
+.boost-card .rank-info .arrow {
+    color: #ff6b35;
+}
+
+.boost-card .price {
+    font-weight: bold;
+    color: #00b894;
+    font-size: 1.1rem;
+}
+
+.boost-card .status {
+    font-size: 0.8rem;
+    padding: 3px 10px;
+    border-radius: 20px;
+    background: rgba(255, 107, 53, 0.2);
+    color: #ff6b35;
+}
+
+.boost-card .status.completed {
+    background: rgba(0, 184, 148, 0.2);
+    color: #00b894;
+}
+
+.boost-card .status.queued {
+    background: rgba(52, 152, 219, 0.2);
+    color: #3498db;
+}
+
+.boost-card .actions {
+    margin-top: 10px;
+    display: flex;
+    gap: 8px;
+}
+
+/* Form Grid */
+.form-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+    gap: 15px;
+    margin-bottom: 15px;
+}
+
+.form-group label {
+    display: block;
+    color: #888;
+    font-size: 0.8rem;
+    margin-bottom: 5px;
+}
+
+/* Stats Grid */
+.stats-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+    gap: 15px;
+    margin-bottom: 20px;
+}
+
+.stat-card {
+    background: rgba(255, 255, 255, 0.05);
+    padding: 20px;
+    border-radius: 10px;
+    text-align: center;
+}
+
+.stat-card span {
+    display: block;
+    color: #888;
+    font-size: 0.8rem;
+}
+
+.stat-card strong {
+    font-size: 1.8rem;
+    background: linear-gradient(135deg, #ff6b35, #ff4500);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+}
+
+/* Queue List */
+.queue-list {
+    max-height: 300px;
+    overflow-y: auto;
+}
+
+.queue-list::-webkit-scrollbar {
+    width: 5px;
+}
+
+.queue-list::-webkit-scrollbar-thumb {
+    background: rgba(255, 107, 53, 0.3);
+    border-radius: 10px;
+}
+
+.queue-item {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 10px 15px;
+    background: rgba(255, 255, 255, 0.03);
+    border-radius: 8px;
+    margin-bottom: 5px;
+    border-left: 3px solid #ff6b35;
+}
+
+.queue-item .player-name {
+    font-weight: bold;
+}
+
+.queue-item .time {
+    color: #888;
+    font-size: 0.8rem;
+}
+
+.empty-msg {
+    text-align: center;
+    color: #666;
+    padding: 20px;
+}
+
+/* Message */
+.message {
+    margin-top: 15px;
+    padding: 10px;
+    border-radius: 8px;
+    text-align: center;
+}
+
+.message.success {
+    background: rgba(0, 184, 148, 0.1);
+    color: #00b894;
+}
+
+.message.error {
+    background: rgba(231, 76, 60, 0.1);
+    color: #e74c3c;
+}
+
+.message.info {
+    background: rgba(52, 152, 219, 0.1);
+    color: #3498db;
+}
+
+/* User Info Bar */
+.user-info-bar {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 15px 0;
+    flex-wrap: wrap;
+}
+
+.user-info-bar .input-field {
+    width: 200px;
+}
+
+/* Responsive */
+@media (max-width: 600px) {
+    header h1 {
+        font-size: 1.5rem;
+    }
+    
+    .boost-grid {
+        grid-template-columns: 1fr;
+    }
+    
+    .form-grid {
+        grid-template-columns: 1fr;
+    }
+    
+    .stats-grid {
+        grid-template-columns: repeat(2, 1fr);
+    }
+    
+    .btn {
+        width: 100%;
+    }
+    
+    .user-info-bar {
+        flex-direction: column;
+    }
+    
+    .user-info-bar .input-field {
+        width: 100%;
+    }
+}
