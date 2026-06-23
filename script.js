@@ -1,5 +1,5 @@
-const supabaseUrl = 'YOUR_SUPABASE_URL';
-const supabaseKey = 'YOUR_SUPABASE_ANON_KEY';
+const supabaseUrl = 'https://eagvujficirkrlrewtxk.supabase.co';
+const supabaseKey = 'eyJhbGci0iJIUzI1NiIsInR5cCI6IkpXVcJ9.eyJpc3Mi0iJzdXBhYmFzZSIsInJIzIi16ImVhZ';
 const supabase = supabase.createClient(supabaseUrl, supabaseKey);
 
 // State
