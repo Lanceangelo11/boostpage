@@ -3,7 +3,7 @@
 // ============================================
 
 const supabaseUrl = 'https://eagvujficirkrlrewtxk.supabase.co';
-const supabaseKey = 'YOUR_FULL_ANON_KEY_HERE';  // Click Copy button to get full key
+const supabaseKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImVhZ3Z1amZpaWNya3JscmV3dHhrIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODIxODg1ODAsImV4cCI6MjA5Nzc2NDU4MH0.s1lRcNV-peA0yQBAKWAmhaCh5Z1oLjboBQ_d0r5Uuj8';  // Click Copy button to get full key
 const supabase = supabase.createClient(supabaseUrl, supabaseKey);
 
 // Admin Password
