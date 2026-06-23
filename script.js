@@ -2,12 +2,16 @@
 // CROSSFIRE BOOST QUEUE - USER SIDE
 // ============================================
 
-// ✅ FIX: Check if supabase is already defined
-if (typeof supabase === 'undefined') {
-    const supabaseUrl = 'https://eagvujficirkrlrewtxk.supabase.co';
-    const supabaseKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImVhZ3Z1amZpaWNya3JscmV3dHhrIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODIxODg1ODAsImV4cCI6MjA5Nzc2NDU4MH0.s1lRcNV-peA0yQBAKWAmhaCh5Z1oLjboBQ_d0r5Uuj8';  // ← REPLACE WITH YOUR FULL KEY
-    var supabase = supabase.createClient(supabaseUrl, supabaseKey);
-}
+// ✅ FIX: Initialize Supabase correctly
+const supabaseUrl = 'https://eagvujficirkrlrewtxk.supabase.co';
+const supabaseKey = 'YOUR_ANON_KEY_HERE';  // ← REPLACE WITH YOUR REAL KEY
+
+// ✅ CORRECT: Create supabase client with function
+const { createClient } = supabase;
+const supabaseClient = createClient(supabaseUrl, supabaseKey);
+
+// Make it globally accessible
+window.supabase = supabaseClient;
 
 // State
 let currentUser = null;
@@ -24,6 +28,7 @@ const currentUserDisplay = document.getElementById('currentUserDisplay');
 // Initialize
 async function init() {
     console.log('🚀 Initializing app...');
+    console.log('🔑 Supabase client:', window.supabase);
     await loadBoostContracts();
     await loadLiveQueue();
     await subscribeToUpdates();
@@ -58,7 +63,7 @@ async function loadBoostContracts() {
     console.log('📡 Loading boost contracts...');
     
     try {
-        const { data, error } = await supabase
+        const { data, error } = await window.supabase
             .from('boost_contracts')
             .select('*')
             .eq('status', 'active')
@@ -112,7 +117,7 @@ async function joinQueue(contractId) {
     }
 
     try {
-        const { data: existing } = await supabase
+        const { data: existing } = await window.supabase
             .from('queue_requests')
             .select('*')
             .eq('contract_id', contractId)
@@ -124,7 +129,7 @@ async function joinQueue(contractId) {
             return;
         }
 
-        const { data, error } = await supabase
+        const { data, error } = await window.supabase
             .from('queue_requests')
             .insert([
                 {
@@ -160,7 +165,7 @@ async function loadUserQueueStatus() {
     }
 
     try {
-        const { data, error } = await supabase
+        const { data, error } = await window.supabase
             .from('queue_requests')
             .select(`
                 *,
@@ -215,7 +220,7 @@ async function leaveQueue(queueId) {
     if (!confirm('Are you sure you want to leave this queue?')) return;
 
     try {
-        const { error } = await supabase
+        const { error } = await window.supabase
             .from('queue_requests')
             .update({ status: 'cancelled' })
             .eq('id', queueId);
@@ -237,7 +242,7 @@ async function leaveQueue(queueId) {
 // Load Live Queue
 async function loadLiveQueue() {
     try {
-        const { data, error } = await supabase
+        const { data, error } = await window.supabase
             .from('queue_requests')
             .select(`
                 *,
@@ -279,7 +284,9 @@ async function loadLiveQueue() {
 
 // Real-time Subscriptions
 function subscribeToUpdates() {
-    supabase
+    console.log('📡 Setting up real-time subscriptions...');
+    
+    window.supabase
         .channel('contract_changes')
         .on('postgres_changes', 
             { event: '*', schema: 'public', table: 'boost_contracts' },
@@ -287,7 +294,7 @@ function subscribeToUpdates() {
         )
         .subscribe();
 
-    supabase
+    window.supabase
         .channel('queue_changes')
         .on('postgres_changes', 
             { event: '*', schema: 'public', table: 'queue_requests' },
@@ -297,6 +304,8 @@ function subscribeToUpdates() {
             }
         )
         .subscribe();
+    
+    console.log('✅ Subscriptions set up');
 }
 
 // Show Message
