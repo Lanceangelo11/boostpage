@@ -2,12 +2,12 @@
 // CROSSFIRE BOOST QUEUE - USER SIDE
 // ============================================
 
-// ✅ YOUR CORRECT SUPABASE CONFIG
+// ✅ CORRECT - supabase (with 'p'), NOT subabase (with 'b')
 const supabaseUrl = 'https://eagvujficirkrlrewtxk.supabase.co';
 const supabaseKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImVhZ3Z1amZpaWNya3JscmV3dHhrIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODIxODg1ODAsImV4cCI6MjA5Nzc2NDU4MH0.s1lRcNV-peA0yQBAKWAmhaCh5Z1oLjboBQ_d0r5Uuj8';
 
 console.log('🌐 URL:', supabaseUrl);
-console.log('🔑 Key:', supabaseKey.substring(0, 20) + '...');
+console.log('🔑 Key length:', supabaseKey.length);
 
 // Initialize Supabase
 const { createClient } = supabase;
